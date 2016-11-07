@@ -1,5 +1,5 @@
 // 
-// Copyright (c) 2004-2017 Jaroslaw Kowalski <jaak@jkowalski.net>, Kim Christensen, Julian Verdurmen
+// Copyright (c) 2004-2016 Jaroslaw Kowalski <jaak@jkowalski.net>, Kim Christensen, Julian Verdurmen
 // 
 // All rights reserved.
 // 
@@ -33,58 +33,75 @@
 
 namespace NLog.LayoutRenderers.Wrappers
 {
+    using System;
     using System.ComponentModel;
-    using System.Globalization;
     using NLog.Config;
+    using System.Text;
 
     /// <summary>
-    /// Converts the result of another layout output to upper case.
+    /// Substring the result
     /// </summary>
+    /// <remarks>
+    /// Same behavior as <see cref="string.Substring(int)"/> / <see cref="string.Substring(int, int)"/></remarks>
     /// <example>
-    /// ${uppercase:${level}} //[DefaultParameter]
-    /// ${uppercase:Inner=${level}} 
-    /// ${level:uppercase=true} // [AmbientProperty]
+    /// ${substring:${level}:start=2:length=2} //[DefaultParameter]
+    /// ${substring:Inner=${level}:start=2:length=2} 
     /// </example>
-    [LayoutRenderer("uppercase")]
-    [AmbientProperty("Uppercase")]
+    [LayoutRenderer("substring")]
+    [AmbientProperty("Substring")]
     [ThreadAgnostic]
-    public sealed class UppercaseLayoutRendererWrapper : WrapperLayoutRendererBuilderBase
+    public sealed class SubstringLayoutRendererWrapper : WrapperLayoutRendererBuilderBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UppercaseLayoutRendererWrapper" /> class.
         /// </summary>
-        public UppercaseLayoutRendererWrapper()
+        public SubstringLayoutRendererWrapper()
         {
-            this.Culture = CultureInfo.InvariantCulture;
-            this.Uppercase = true;
+            Start = 0;
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether upper case conversion should be applied.
+        /// Gets or sets the start index. 
         /// </summary>
-        /// <value>A value of <c>true</c> if upper case conversion should be applied otherwise, <c>false</c>.</value>
+        /// <value>Index</value>
         /// <docgen category='Transformation Options' order='10' />
-        [DefaultValue(true)]
-        public bool Uppercase { get; set; }
+        [DefaultValue(0)]
+        public int Start { get; set; }
 
         /// <summary>
-        /// Gets or sets the culture used for rendering. 
+        /// Gets or sets the length in characters. If <c>null</c>, then the whole string
         /// </summary>
+        /// <value>Index</value>
         /// <docgen category='Transformation Options' order='10' />
-        public CultureInfo Culture { get; set; }
+        [DefaultValue(null)]
+        public int? Length { get; set; }
 
         /// <summary>
-        /// Post-processes the rendered message. 
+        /// Transforms the output of another layout.
         /// </summary>
-        /// <param name="target">Output to be post-processed.</param>
-        protected override void TransformFormattedMesssage(System.Text.StringBuilder target)
+        /// <param name="target">Output to be transform.</param>
+        protected override void TransformFormattedMesssage(StringBuilder target)
         {
-            if (this.Uppercase)
+
+            if (Length <= 0 || Start > target.Length)
             {
-                CultureInfo culture = this.Culture;
-                for (int i = 0; i < target.Length; ++i)
-                    target[i] = char.ToUpper(target[i], culture);
+                //no .Clear on .NET 3.5
+                target.Length = 0;
+                return;
             }
+
+            if (Start > 0)
+            {
+                target.Remove(0, Start);
+            }
+
+            if (Length.HasValue && target.Length > Length.Value)
+            {
+                target.Remove(Length.Value, target.Length - Length.Value);
+            }
+
         }
+
+       
     }
 }
