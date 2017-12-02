@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>NLog Library</Description>
+    <VersionPrefix>1.0.0.0</VersionPrefix>
+    <Authors>NLog</Authors>
+    <TargetFramework>net45</TargetFramework>
+    <AssemblyName>NLog.UnitTests.Web</AssemblyName>
+    <PackageId>NLog.UnitTests.Web</PackageId>
+    <PackageTags>NLog</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <PackageReference Include="nunit" Version="3.2.0" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>
